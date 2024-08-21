@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Joke</title>
+    <link rel="stylesheet" href="/assets/style.css">
+    <script src="/assets/script.js" defer></script>
+</head>
+<body style="background-image: url('{{ backgroundImage }}');">
+    <div class="container">
+        <h1>Random Joke</h1>
+        <p>{{ joke.setup }}</p>
+        <p><strong>{{ joke.punchline }}</strong></p>
+        <div class="buttons">
+            <a href="/joke" class="button">Refresh Joke</a>
+            <a href="/" class="button">Home</a>
+        </div>
+    </div>
+</body>
+</html>

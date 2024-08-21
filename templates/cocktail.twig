@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ cocktail.strDrink }}</title>
+    <link rel="stylesheet" href="/assets/style.css">
+    <script src="/assets/script.js" defer></script>
+</head>
+<body style="background-image: url('{{ backgroundImage }}');">
+    <div class="container">
+        <h1>{{ cocktail.strDrink }}</h1>
+        <p><strong>Category:</strong> {{ cocktail.strCategory }}</p>
+        <p><strong>Instructions:</strong> {{ cocktail.strInstructions }}</p>
+        
+        {% if cocktail.strDrinkThumb %}
+            <img src="{{ cocktail.strDrinkThumb }}" alt="{{ cocktail.strDrink }}" class="cocktail-image">
+        {% endif %}
+
+        <h2>Ingredients:</h2>
+        <ul>
+            {% for i in 1..15 %}
+                {% set ingredient = attribute(cocktail, 'strIngredient' ~ i) %}
+                {% set measure = attribute(cocktail, 'strMeasure' ~ i) %}
+                {% if ingredient %}
+                    <li>{{ measure ? measure ~ ' ' : '' }}{{ ingredient }}</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+
+        <div class="buttons">
+            <a href="/cocktail" class="button">Refresh Cocktail</a>
+            <a href="/" class="button">Home</a>
+        </div>
+    </div>
+</body>
+</html>
