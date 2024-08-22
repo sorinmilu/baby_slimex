@@ -20,7 +20,8 @@ $container = new Container();
 
 // Set up logging
 $log = new Logger('slim_app');
-$log->pushHandler(new StreamHandler($config['log_file'], Logger::DEBUG));
+$logLevel = $config['log_level'] ?? Logger::DEBUG;
+$log->pushHandler(new StreamHandler($config['log_file'], $logLevel));
 
 // Add logger to container
 $container->set(LoggerInterface::class, function() use ($log) {
@@ -44,8 +45,13 @@ function fetchBackgroundImage($size, $tmpDir, LoggerInterface $log) {
     $client = new Client(['allow_redirects' => true]);
     $imageUrl = "https://picsum.photos/{$size}";
 
+    if (!is_dir($tmpDir)) {
+        $log->debug("Creating target directory for images: ". $tmpDir);
+        mkdir($tmpDir, 0755, true);
+    }
+
     try {
-        $log->info("Fetching image from URL: $imageUrl");
+        $log->debug("Fetching image from URL: $imageUrl");
 
         // Send a GET request to the image URL
         $response = $client->request('GET', $imageUrl, ['stream' => true]);
@@ -54,7 +60,7 @@ function fetchBackgroundImage($size, $tmpDir, LoggerInterface $log) {
         $redirectHistory = $response->getHeader('X-Guzzle-Redirect-History');
         $finalUrl = end($redirectHistory) ?: $imageUrl;
 
-        $log->info("Final URL after redirection: $finalUrl");
+        $log->debug("Final URL after redirection: $finalUrl");
 
         // Get the image content from the final URL
         $imageResponse = $client->request('GET', $finalUrl, ['stream' => true]);
@@ -67,12 +73,11 @@ function fetchBackgroundImage($size, $tmpDir, LoggerInterface $log) {
         // Save the image content to the file
         file_put_contents($filePath, $imageContent);
 
-        $log->info("Image saved to: $filePath");
+        $log->debug("Image saved to: $filePath");
 
         return $filename; // Return the filename to be used in the URL
 
     } catch (RequestException $e) {
-        // Log any exceptions
         $log->error("Error fetching image: " . $e->getMessage());
         return null;
     }
@@ -81,11 +86,11 @@ function fetchBackgroundImage($size, $tmpDir, LoggerInterface $log) {
 // Function to get or fetch a background image
 function getBackgroundImage($config, LoggerInterface $log) {
     $cachedImages = glob($config['tmp_dir'] . 'bg_*.jpg');
-    $log->info("we have ". count($cachedImages) . " images in cache");
+    $log->debug("we have ". count($cachedImages) . " images in cache");
     
     // Use cache if there are more than 10 images
     if (count($cachedImages) > $config['cached_images'] -1) {
-        $log->info("Selecting a random cached background image.");
+        $log->debug("Selecting a random cached background image.");
         $randomImage = $cachedImages[array_rand($cachedImages)];
         return basename($randomImage);
     }
@@ -95,46 +100,64 @@ function getBackgroundImage($config, LoggerInterface $log) {
 }
 
 // Home Route
-$app->get('/', function ($request, $response, $args) use ($config) {
+$app->get('/', function ($request, $response, $args) use ($container,$config) {
+    $log = $container->get(LoggerInterface::class);
+    $backgroundImageFilename = getBackgroundImage($config, $log);
+    $backgroundImageUrl = $backgroundImageFilename ? '/tmp/' . $backgroundImageFilename : '';
+
     return $this->get('view')->render($response, 'home.twig', [
         'appName' => $config['app_name'],
-        'backgroundImage' => getBackgroundImage($config, $this->get(LoggerInterface::class))
+        'backgroundImage' => $backgroundImageUrl
     ]);
 });
 
 // Joke Route
 $app->get('/joke', function ($request, $response, $args) use ($container, $config) {
     $log = $container->get(LoggerInterface::class);
-    $log->info('Joke route accessed');
-    
+    $ip = $request->getServerParams()['REMOTE_ADDR'] ?? 'unknown';
+    $log->debug($ip . ': Joke route accessed');
+
     $backgroundImageFilename = getBackgroundImage($config, $log);
     $backgroundImageUrl = $backgroundImageFilename ? '/tmp/' . $backgroundImageFilename : '';
 
     $client = new Client();
-    $jokeApiResponse = $client->request('GET', 'https://official-joke-api.appspot.com/random_joke');
-    $joke = json_decode($jokeApiResponse->getBody());
+    try {
+        $jokeApiResponse = $client->request('GET', 'https://official-joke-api.appspot.com/random_joke');
+	$joke = json_decode($jokeApiResponse->getBody());
 
-    $log->info('Joke retrieved: ' . $joke->setup);
-    
+        $log->debug('Joke retrieved: ' . $joke->setup);
+    } catch (RequestException $e) {
+        $log->error("Error getting joke: " . $e->getMessage());
+        return $this->get('view')->render($response, 'err.twig', []);
+    }
+
     return $this->get('view')->render($response, 'joke.twig', [
         'joke' => $joke,
         'backgroundImage' => $backgroundImageUrl
     ]);
+
 });
 
 // Cocktail Route
 $app->get('/cocktail', function ($request, $response, $args) use ($container, $config) {
     $log = $container->get(LoggerInterface::class);
-    $log->info('Cocktail route accessed');
-    
+    $ip = $request->getServerParams()['REMOTE_ADDR'] ?? 'unknown';
+
+    $log->debug($ip . ': Cocktail route accessed');
+
     $backgroundImageFilename = getBackgroundImage($config, $log);
     $backgroundImageUrl = $backgroundImageFilename ? '/tmp/' . $backgroundImageFilename : '';
 
     $client = new Client();
-    $cocktailApiResponse = $client->request('GET', 'https://www.thecocktaildb.com/api/json/v1/1/random.php');
-    $cocktail = json_decode($cocktailApiResponse->getBody())->drinks[0];
+
+    try {
+        $cocktailApiResponse = $client->request('GET', 'https://www.thecocktaildb.com/api/json/v1/1/random.php');
+        $cocktail = json_decode($cocktailApiResponse->getBody())->drinks[0];
+    } catch (RequestException $e) {
+        $log->error("Error getting recipe: " . $e->getMessage());
+        return $this->get('view')->render($response, 'err.twig', []);
+    }
     
-    $log->info('Cocktail retrieved: ' . $cocktail->strDrink);
 
     return $this->get('view')->render($response, 'cocktail.twig', [
         'cocktail' => $cocktail,
@@ -146,11 +169,12 @@ $app->get('/cocktail', function ($request, $response, $args) use ($container, $c
 $app->get('/tmp/{filename:.+}', function ($request, $response, $args) use ($config) {
     $filename = $args['filename'];
     $filePath = $config['tmp_dir'] . $filename;
-    
+
     if (file_exists($filePath)) {
         $response->getBody()->write(file_get_contents($filePath));
         return $response->withHeader('Content-Type', mime_content_type($filePath));
     } else {
+        $log->error('File not found: ' . $filePath);
         return $response->withStatus(404)->write('File not found');
     }
 });
