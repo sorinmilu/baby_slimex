@@ -39,7 +39,7 @@ $app = AppFactory::create();
 
 // Add Twig-View Middleware
 $app->add(TwigMiddleware::createFromContainer($app));
-
+$app->getContainer()->get('view')->getEnvironment()->addGlobal('asset_path', $config['asset_path']);
 // Function to fetch and save a random background image from Picsum
 function fetchBackgroundImage($size, $tmpDir, LoggerInterface $log) {
     $client = new Client(['allow_redirects' => true]);
