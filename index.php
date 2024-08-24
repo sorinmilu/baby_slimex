@@ -69,13 +69,13 @@ function fetchBackgroundImage($size, $tmpDir, LoggerInterface $log) {
     $imageUrl = "https://picsum.photos/{$size}";
 
     if (!is_dir($tmpDir)) {
-        $log->debug("| | Creating target directory for images: ". $tmpDir);
+        $log->debug("| Creating target directory for images: ". $tmpDir);
         mkdir($tmpDir, 0755, true);
     }
 
     try {
 
-        $log->debug("| | Fetching image from URL: $imageUrl");
+        $log->debug("| Fetching image from URL: $imageUrl");
 
         // Send a GET request to the image URL
         $response = $client->request('GET', $imageUrl, ['stream' => true]);
@@ -84,7 +84,7 @@ function fetchBackgroundImage($size, $tmpDir, LoggerInterface $log) {
         $redirectHistory = $response->getHeader('X-Guzzle-Redirect-History');
         $finalUrl = end($redirectHistory) ?: $imageUrl;
 
-        $log->debug("| | Final URL after redirection: $finalUrl");
+        $log->debug("| Final URL after redirection: $finalUrl");
 
         // Get the image content from the final URL
         $imageResponse = $client->request('GET', $finalUrl, ['stream' => true]);
@@ -97,7 +97,7 @@ function fetchBackgroundImage($size, $tmpDir, LoggerInterface $log) {
         // Save the image content to the file
         file_put_contents($filePath, $imageContent);
 
-        $log->debug("| | Image saved to: $filePath");
+        $log->debug("| Image saved to: $filePath");
 
         return $filename; // Return the filename to be used in the URL
 
@@ -111,11 +111,11 @@ function fetchBackgroundImage($size, $tmpDir, LoggerInterface $log) {
 function getBackgroundImage($config, LoggerInterface $log) {
     $cachedImages = glob($config['tmp_dir'] . 'bg_*.jpg');
 
-    $log->debug("| | we have ". count($cachedImages) . " images in cache");
+    $log->debug("| we have ". count($cachedImages) . " images in cache");
     
     // Use cache if there are more than 10 images
     if (count($cachedImages) > $config['cached_images'] -1) {
-        $log->debug("| | Selecting a random cached background image.");
+        $log->debug("| Selecting a random cached background image.");
         $randomImage = $cachedImages[array_rand($cachedImages)];
         return basename($randomImage);
     }
