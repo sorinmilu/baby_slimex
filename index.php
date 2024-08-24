@@ -23,8 +23,10 @@ $container = new Container();
 // Create a custom log format with pipe separators
 $logFormat = "%datetime% | %level_name% | %message%\n";
 
+$dateFormat = "Y-m-d H:i:s";
+
 // Create a LineFormatter with the custom format
-$formatter = new LineFormatter($logFormat, null, true, true);
+$formatter = new LineFormatter($logFormat, $dateFormat, true, true);
 
 // Create a logger instance
 $log = new Logger('slim_app');
