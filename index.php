@@ -63,6 +63,9 @@ $app->add(TwigMiddleware::createFromContainer($app));
 $app->getContainer()->get('view')->getEnvironment()->addGlobal('asset_path', $config['asset_path']);
 // Function to fetch and save a random background image from Picsum
 
+$myfile = 'assets'.'/'.$config['name_file'];
+$myname = file_get_contents($myfile);
+$app->getContainer()->get('view')->getEnvironment()->addGlobal('myname', $myname);
 
 function fetchBackgroundImage($size, $tmpDir, LoggerInterface $log) {
     $client = new Client(['allow_redirects' => true]);
@@ -129,7 +132,6 @@ $app->get('/', function ($request, $response, $args) use ($container,$config) {
     $log = $container->get(LoggerInterface::class);
     $backgroundImageFilename = getBackgroundImage($config, $log);
     $backgroundImageUrl = $backgroundImageFilename ? '/tmp/' . $backgroundImageFilename : '';
-
     return $this->get('view')->render($response, 'home.twig', [
         'appName' => $config['app_name'],
         'backgroundImage' => $backgroundImageUrl

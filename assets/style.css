@@ -12,6 +12,18 @@ body {
     align-items: center;
 }
 
+.status {
+    position: fixed; /* Fixes the position relative to the viewport */
+    bottom: 10px; /* Distance from the bottom edge of the viewport */
+    right: 10px; /* Distance from the right edge of the viewport */
+    padding: 10px; /* Padding inside the box */
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+    color: white; /* Text color */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Subtle shadow for better visibility */
+    z-index: 1000; /* Ensures the box is on top of other elements */
+}
+
 .container {
     width: 80%;
     max-width: 600px;

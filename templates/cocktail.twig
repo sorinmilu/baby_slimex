@@ -9,6 +9,9 @@
     <script src="{{ asset_path }}/script.js" defer></script>
 </head>
 <body style="background-image: url('{{ backgroundImage }}');">
+    <div class="status">
+        <p>{{ myname }}</p>
+    </div>
     <div class="container">
         <h1>{{ cocktail.strDrink }}</h1>
         <p><strong>Category:</strong> {{ cocktail.strCategory }}</p>

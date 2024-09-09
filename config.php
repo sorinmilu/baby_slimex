@@ -8,5 +8,6 @@ return [
     'background_image_size' => '1920/1080', // Set the size of the background image for api call, w / h
     'tmp_dir' => __DIR__ . '/tmp/',        // Directory for temporary files (background images)
     'cached_images' => 10,
+    'name_file' => 'name.txt',
     'log_level' => Monolog\Logger::DEBUG, // Example: Monolog\Logger::DEBUG, Monolog\Logger::INFO, Monolog\Logger::WARNING, etc.
 ];
