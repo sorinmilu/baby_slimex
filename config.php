@@ -12,6 +12,6 @@ return [
     'cached_images' => 10,
     'name_file' => 'name.txt',
     'log_level' => Monolog\Logger::DEBUG, // Example: Monolog\Logger::DEBUG, Monolog\Logger::INFO, Monolog\Logger::WARNING, etc.
-    'usemongo' => false,
+    'usemongo' => true,
     'mongodb_database' => 'baby_slimex'
 ];

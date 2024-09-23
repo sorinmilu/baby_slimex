@@ -12,12 +12,13 @@ class JokeModel {
         $this->collection = $mongoClient->{$databaseName}->{$this->collectionName};
     }
 
-    public function findOrCreateJoke($jokeData) {
+    public function findOrCreateJoke($log, $jokeData) {
 
         $jokeId = $jokeData->id; 
         $existingJoke = $this->collection->findOne(['id' => $jokeId]);
         
         if ($existingJoke) {
+            $log->debug(' | Mongo has joke');    
             $this->collection->updateOne(
                 ['id' => $jokeId],
                 ['$inc' => ['hit' => 1]]
@@ -32,6 +33,7 @@ class JokeModel {
                 'hit' => 1 
             ];
             $this->collection->insertOne($jokeDataToInsert);
+            $log->debug(' | Mongo got joke inserted');    
             return $jokeDataToInsert; 
         }
     }
@@ -57,5 +59,11 @@ class JokeModel {
     
         return $count;
     }
+    function getAllCount() {
+    
+        $count = $this->collection->countDocuments([]);
+        return $count;
+    }
+
 
 }

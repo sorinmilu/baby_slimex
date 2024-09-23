@@ -12,14 +12,13 @@ class CocktailModel {
         $this->collection = $mongoClient->{$databaseName}->{$this->collectionName};
     }
 
-    public function findOrCreateCocktail($data) {
+    public function findOrCreateCocktail($log, $data) {
 
         $ckId = $data->idDrink; 
 
         $existingCocktail = $this->collection->findOne(['idDrink' => $ckId]);
-        
         if ($existingCocktail) {
-            error_log('updating increment');
+            $log->debug(' | Mongo has cocktail');  
             $this->collection->updateOne(
                 ['idDrink' => $ckId],
                 ['$inc' => ['hit' => 1]]
@@ -31,6 +30,7 @@ class CocktailModel {
             $dataArray['hit'] = 1;    
 
             $this->collection->insertOne($dataArray);
+            $log->debug(' | Mongo got cocktail inserted');    
             return $dataArray; 
         }
     }
@@ -56,7 +56,11 @@ class CocktailModel {
     
         return $count;
     }
+    function getAllCount() {
+        $count = $this->collection->countDocuments([]);
     
+        return $count;
+    }
     
 
 }
