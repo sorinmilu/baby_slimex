@@ -136,5 +136,14 @@ class BSHelper {
         return $config['img_path']."/cocktails/$drinkId/{$drinkId}_thumb.jpg"; 
     }
 
-    
+	public static function fibonacci($n) {
+            if ($n < 0) {
+            throw new InvalidArgumentException("Negative arguments are not allowed.");
+	    }
+    	if ($n <= 1) {
+            return $n; // Return 0 for n=0 and 1 for n=1
+        }
+        return self::fibonacci($n - 1) + self::fibonacci($n - 2); // Recursive call
+    }
+
 }

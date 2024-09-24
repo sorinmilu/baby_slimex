@@ -21,7 +21,7 @@ use DI\ContainerBuilder;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use MongoDB\Client as MongoClient;
-
+use Dotenv;
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -151,6 +151,28 @@ $app->get('/joke', function ($request, $response, $args) use ($container, $confi
         'joke' => $joke,
         'backgroundImage' => $backgroundImageUrl
     ]);
+});
+
+$app->get('/fibo/{fnumber}', function($request, $response, $args) use ($container, $config) {
+
+    $fnumber = (int)$args['fnumber'];
+    $log = $container->get(LoggerInterface::class);
+    $ip = $request->getServerParams()['REMOTE_ADDR'] ?? 'unknown';
+
+    $log->info($ip. ' |  Fibo route accessed with number: ' . $fnumber);
+
+    $fibonacci = BSHelper::fibonacci($fnumber);
+
+    $backgroundImageFilename = BSHelper::getBackgroundImage($config, $log);
+    $backgroundImageUrl = $config['img_path'].'/backgrounds/'. $backgroundImageFilename;
+
+    return $this->get('view')->render($response, 'fibonacci.twig', [
+        'fnumber' => $fnumber,
+        'fibonacci' => $fibonacci,
+        'backgroundImage' => $backgroundImageUrl
+    ]);
+
+
 });
 
 

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Joke</title>
+    <link rel="icon" href="{{ asset_path }}/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="{{ asset_path }}/style.css">
+    <script src="{{ asset_path }}/script.js" defer></script>
+</head>
+<body style="background-image: url('{{ backgroundImage }}');">
+    <div class="status">
+        <p>{{ myname }}</p>
+         {% if usemongo %}
+            J: {{ mongojokes }} C: {{ mongococktails }}
+        {% endif %}
+    </div>
+    <div class="container">
+        <h1>Fibonacci</h1>
+        <p>{{ fnumber }}</p>
+        <p><strong>{{ fibonacci }}</strong></p>
+        <div class="buttons">
+            <a href="/fibo/{{ fnumber }}" class="button">Refresh Fibonacci</a>
+            <a href="/" class="button">Home</a>
+        </div>
+    </div>
+</body>
+</html>

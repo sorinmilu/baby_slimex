@@ -10,6 +10,8 @@ class CocktailModel {
 
     public function __construct(MongoClient  $mongoClient, $databaseName) {
         $this->collection = $mongoClient->{$databaseName}->{$this->collectionName};
+	$this->collection->createIndex(['id' => 1]);
+        $this->collection->createIndex(['created_at' => 1]); 
     }
 
     public function findOrCreateCocktail($log, $data) {
@@ -37,12 +39,11 @@ class CocktailModel {
     
     function getRandomCocktail() {
         $errorCocktail = ['strCategory' => 'error', 'strInstructions' => "Mix nothing with nothing", "id" => 0];
-    
-        $random = $this->collection->aggregate([
-            ['$sample' => ['size' => 1]] 
-        ]);
-    
-        return iterator_to_array($randomCocktail, false)[0] ?? $errorCocktail; 
+
+	$count = $this->collection->countDocuments();
+	$random = rand(0, $count - 1);
+	$randomCocktail = $this->collection->findOne([], ['skip' => $random]);
+        return $randomCocktail ?? $errorCocktail;
     }
     
     function getLastHourCount() {

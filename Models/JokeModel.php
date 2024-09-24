@@ -10,6 +10,9 @@ class JokeModel {
 
     public function __construct(MongoClient  $mongoClient, $databaseName) {
         $this->collection = $mongoClient->{$databaseName}->{$this->collectionName};
+	$this->collection->createIndex(['id' => 1]);
+        $this->collection->createIndex(['created_at' => 1]); // Index for efficient date-based queries
+
     }
 
     public function findOrCreateJoke($log, $jokeData) {
@@ -41,11 +44,11 @@ class JokeModel {
     function getRandomJoke() {
         $errorJoke = ['type' => 'error', 'setup' => "What is a mongo that isn't?", 'punchline' => "A NonGo", "id" => 0];
     
-        $randomJoke = $this->collection->aggregate([
-            ['$sample' => ['size' => 1]] 
-        ]);
+	$count = $this->collection->countDocuments();
+	$random = rand(0, $count - 1);
+	$randomJoke = $this->collection->findOne([], ['skip' => $random]);
     
-        return iterator_to_array($randomJoke, false)[0] ?? $errorJoke; 
+        return $randomJoke ?? $errorJoke; 
     }
     
     function getLastHourCount() {
