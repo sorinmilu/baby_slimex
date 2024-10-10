@@ -21,7 +21,7 @@ use DI\ContainerBuilder;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use MongoDB\Client as MongoClient;
-use Dotenv;
+#use Dotenv;
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -30,17 +30,16 @@ $dotenv->load();
 $containerBuilder = new ContainerBuilder();
 
 $containerBuilder->addDefinitions([
-    Client::class => function () {
-        $mongoUri = $_ENV['MONGODB_URI'];
+    Client::class => function () use ($config) {
+	$mongoUri = BSHelper::getMongoDbUri($config);
         return new MongoClient($mongoUri);
     },
-
-    JokeModel::class => function ($container) {
+    JokeModel::class => function ($container) use ($config) {
         $mongoClient = $container->get(Client::class);
         $databaseName = $config['mongo_database'] ?? 'baby_slimex';
         return new JokeModel($mongoClient, $databaseName);
     },
-    CocktailModel::class => function ($container) {
+    CocktailModel::class => function ($container) use ($config) {
         $mongoClient = $container->get(Client::class);
         $databaseName = $config['mongo_database'] ?? 'baby_slimex';
         return new CocktailModel($mongoClient, $databaseName);

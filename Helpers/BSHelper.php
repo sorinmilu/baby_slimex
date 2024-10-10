@@ -146,4 +146,46 @@ class BSHelper {
         return self::fibonacci($n - 1) + self::fibonacci($n - 2); // Recursive call
     }
 
+    public static function getMongoDbUri($config) {
+
+        if ($config['usevault']) {
+            // Cache key    	
+            $cacheKey = 'mongodb_urir';
+
+            // Check if MongoDB URI is in the APCu cache
+            $cachedUri = apcu_fetch($cacheKey);
+            if ($cachedUri !== false) {
+                // Return the cached URI
+                return $cachedUri;
+            }
+
+            // If URI is not cached, retrieve the username and password from Azure Key Vault
+            $username = self::getSecretFromKeyVault('cosmouser');
+            $password = self::getSecretFromKeyVault('cosmopasswd');
+
+            // Construct the MongoDB URI
+            $mongoUri = "mongodb+srv://{$username}:{$password}@klocril-mongo-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000";
+
+            // Store the URI in APCu cache for future requests
+            apcu_store($cacheKey, $mongoUri, 3600); // Cache for 1 hour (3600 seconds)
+            return $mongoUri;
+
+        } else {
+            return $_ENV['MONGODB_URI'];
+        }
+
+    }
+
+    public static function getSecretFromKeyVault($secretName) {
+	//real logic here
+        $secrets = [
+	    'cosmouser' => 'mongoadmin',
+    	    'cosmopasswd' => 'Mn3Al2(SiO4)3'
+        ];
+
+	return $secrets[$secretName] ?? null;
+    }
+
+
+
 }
