@@ -13,7 +13,6 @@ return [
     'name_file' => 'name.txt',
     'log_level' => Monolog\Logger::DEBUG, // Example: Monolog\Logger::DEBUG, Monolog\Logger::INFO, Monolog\Logger::WARNING, etc.
     'usemongo' => true,
-    'mongodb_database' => 'baby_slimex',
     'usevault' => true,
     'cachevault' => true,
 ];
