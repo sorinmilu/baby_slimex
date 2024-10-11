@@ -82,7 +82,7 @@ class BSHelper {
             $emptyJoke->setup = "What if there's no joke?";
             $emptyJoke->punchline = 'This is no joke, man';
             $emptyJoke->type = 'error';
-            return emptyJoke; 
+            return $emptyJoke; 
         }
     }
 

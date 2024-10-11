@@ -51,6 +51,19 @@ class JokeModel {
         return $randomJoke ?? $errorJoke; 
     }
     
+    function getLastMinuteCount() {
+    
+        $currentDate = new UTCDateTime();
+        $oneMinAgo = new UTCDateTime((new DateTime('-1 minute', new DateTimeZone('UTC')))->getTimestamp() * 1000);
+    
+        $count = $this->collection->countDocuments([
+            'created_at' => ['$gte' => $oneMinAgo] 
+        ]);
+    
+        return $count;
+    }
+
+
     function getLastHourCount() {
     
         $currentDate = new UTCDateTime();
@@ -62,6 +75,20 @@ class JokeModel {
     
         return $count;
     }
+
+    function getLast15MinCount() {
+    
+        $currentDate = new UTCDateTime();
+        $min15Ago = new UTCDateTime((new DateTime('-15 minutes', new DateTimeZone('UTC')))->getTimestamp() * 1000);
+    
+        $count = $this->collection->countDocuments([
+            'created_at' => ['$gte' => $min15Ago] 
+        ]);
+    
+        return $count;
+    }
+
+
     function getAllCount() {
     
         $count = $this->collection->countDocuments([]);

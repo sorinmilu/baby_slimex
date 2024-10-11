@@ -124,9 +124,9 @@ $app->get('/joke', function ($request, $response, $args) use ($container, $confi
     if ($config['usemongo']) {
 
         $jokeModel = $container->get(JokeModel::class);
-        $count = $jokeModel->getLastHourCount();
+        $count = $jokeModel->getLast15MinCount();
 
-        if ($count > 20) {
+        if ($count > 80) {
             $joke = $jokeModel->getRandomJoke($jokesCollection);    
             $log->debug($ip . ' | Joke retrieved from MongoDB: throttle' . $joke['setup']);
         } else {
@@ -189,7 +189,7 @@ $app->get('/cocktail', function ($request, $response, $args) use ($container, $c
 
     if ($config['usemongo']) {
         $cocktailModel = $container->get(CocktailModel::class);
-        $count = $cocktailModel->getLastHourCount();
+        $count = $cocktailModel->getLastMinuteCount();
 
         if ($count > 20) {
             $log->debug("Getting cocktail from mongo - throttle");

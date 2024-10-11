@@ -57,6 +57,20 @@ class CocktailModel {
     
         return $count;
     }
+
+    function getLastMinuteCount() {
+    
+        $currentDate = new UTCDateTime();
+        $oneMinAgo = new UTCDateTime((new DateTime('-1 minute', new DateTimeZone('UTC')))->getTimestamp() * 1000);
+    
+        $count = $this->collection->countDocuments([
+            'created_at' => ['$gte' => $oneMinAgo] 
+        ]);
+    
+        return $count;
+    }
+
+
     function getAllCount() {
         $count = $this->collection->countDocuments([]);
     
