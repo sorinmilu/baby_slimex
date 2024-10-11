@@ -36,7 +36,7 @@ $containerBuilder->addDefinitions([
     },
     JokeModel::class => function ($container) use ($config) {
         $mongoClient = $container->get(Client::class);
-        $databaseName = $config['mongo_database'] ?? 'baby_slimex';
+        $databaseName = BSHelper::getSecretFromKeyVault($config, 'cosmodb');
         return new JokeModel($mongoClient, $databaseName);
     },
     CocktailModel::class => function ($container) use ($config) {

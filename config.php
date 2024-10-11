@@ -14,5 +14,6 @@ return [
     'log_level' => Monolog\Logger::DEBUG, // Example: Monolog\Logger::DEBUG, Monolog\Logger::INFO, Monolog\Logger::WARNING, etc.
     'usemongo' => true,
     'mongodb_database' => 'baby_slimex',
-    'usevault' => false
+    'usevault' => true,
+    'cachevault' => true,
 ];

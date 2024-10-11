@@ -149,25 +149,15 @@ class BSHelper {
     public static function getMongoDbUri($config) {
 
         if ($config['usevault']) {
-            // Cache key    	
-            $cacheKey = 'mongodb_urir';
 
-            // Check if MongoDB URI is in the APCu cache
-            $cachedUri = apcu_fetch($cacheKey);
-            if ($cachedUri !== false) {
-                // Return the cached URI
-                return $cachedUri;
-            }
-
-            // If URI is not cached, retrieve the username and password from Azure Key Vault
-            $username = self::getSecretFromKeyVault('cosmouser');
-            $password = self::getSecretFromKeyVault('cosmopasswd');
+            $username = self::getSecretFromKeyVault($config, 'cosmouser');
+            $password = self::getSecretFromKeyVault($config, 'cosmospasswd');
+            $hostname = self::getSecretFromKeyVault($config, 'cosmohost');
 
             // Construct the MongoDB URI
-            $mongoUri = "mongodb+srv://{$username}:{$password}@klocril-mongo-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000";
+            $mongoUri = "mongodb+srv://{$username}:{$password}@{$hostname}.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000";
 
             // Store the URI in APCu cache for future requests
-            apcu_store($cacheKey, $mongoUri, 3600); // Cache for 1 hour (3600 seconds)
             return $mongoUri;
 
         } else {
@@ -176,14 +166,83 @@ class BSHelper {
 
     }
 
-    public static function getSecretFromKeyVault($secretName) {
-	//real logic here
-        $secrets = [
-	    'cosmouser' => 'mongoadmin',
-    	    'cosmopasswd' => 'Mn3Al2(SiO4)3'
-        ];
+    public static function getSecretFromKeyVault($config, $secretName) {
+        if ($config['cachevault']) {
+            $cacheKey = 'bslm_'.$secretName;
 
-	return $secrets[$secretName] ?? null;
+            if (isset($_ENV['CACHEPREFIX'])) {
+                $cacheKey = $_ENV['CACHEPREFIX'].$secretName;
+            }
+
+            $cachedSecret = apcu_fetch($cacheKey);
+            if ($cachedSecret !== false) {
+                // Return the cached URI
+                return $cachedSecret;
+            }
+        }
+
+        $accessToken = self::getVaultAccessToken($config);
+        $vaultname = $_ENV['VAULTNAME'];
+
+        $url = "https://$vaultname.vault.azure.net/secrets/$secretName?api-version=7.2";
+
+        // Initialize cURL
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: Bearer $accessToken",
+            "Content-Type: application/json"
+        ]);
+
+        // Execute the request
+        $response = curl_exec($ch);
+
+        // Handle errors
+        if (curl_errno($ch)) {
+            throw new Exception('Curl error: ' . curl_error($ch));
+        }
+
+        // Close cURL session
+        curl_close($ch);
+
+        // Decode the response
+        $data = json_decode($response, true);
+	$secret = $data['value'] ?? null;
+    
+	if ($config['cachevault']) {
+            apcu_store($cacheKey, $secret, 3600); // Cache for 1 hour (3600 seconds)
+	}
+        return $secret;
+    }
+
+
+    private static function getVaultAccessToken($config) {
+        $url = 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://vault.azure.net';
+
+        // Append client_id if provided (for user-assigned identity)
+        if (isset($_ENV['CLIENTID'])) {
+            $url .= '&client_id=' . $_ENV['CLIENTID'];
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Metadata: true'
+        ]);
+
+        $response = curl_exec($ch);
+
+        if (curl_errno($ch)) {
+            throw new Exception('Curl error: ' . curl_error($ch));
+        }
+
+        curl_close($ch);
+
+        $data = json_decode($response, true);
+
+        return $data['access_token'] ?? null;
     }
 
 
