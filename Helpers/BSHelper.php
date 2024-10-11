@@ -151,7 +151,7 @@ class BSHelper {
         if ($config['usevault']) {
 
             $username = self::getSecretFromKeyVault($config, 'cosmouser');
-            $password = self::getSecretFromKeyVault($config, 'cosmospasswd');
+            $password = self::getSecretFromKeyVault($config, 'cosmopasswd');
             $hostname = self::getSecretFromKeyVault($config, 'cosmohost');
 
             // Construct the MongoDB URI
