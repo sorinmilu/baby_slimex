@@ -11,12 +11,15 @@ log() {
 if [ ! -f "$MARKER_FILE" ]; then
     log "Running initial setup script..."
     # Place your one-time setup tasks here
-    cp -f /home/site/wwwroot/nginx_config/default /etc/nginx/sites-available/default >> "$log_file" 2>&1
-    service nginx reload >> "$log_file" 2>&1
 
     # Create the marker file after successful execution
     touch "$MARKER_FILE"
     log "Initial setup completed."
-else
-    log "Initial setup script has already been run."
 fi
+
+log "Initial setup script has already been run."
+log "Executing permanent tasks"
+
+cp -f /home/site/wwwroot/nginx_config/default /etc/nginx/sites-available/default >> "$log_file" 2>&1
+service nginx reload >> "$log_file" 2>&1
+
