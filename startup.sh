@@ -1,14 +1,22 @@
 #!/bin/bash
 MARKER_FILE=/home/site/wwwroot/.init_script_ran
 
+log_file="/home/site/wwwroot/.init-script.log"
+
+# Function to log with timestamp
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$log_file"
+}
+
 if [ ! -f "$MARKER_FILE" ]; then
-    echo "Running initial setup script..."
+    log "Running initial setup script..."
     # Place your one-time setup tasks here
-    cp -f /home/site/wwwroot/nginx-config/default /etc/nginx/sites-enabled/default
-    service nginx reload
+    cp -f /home/site/wwwroot/nginx_config/default /etc/nginx/sites-available/default >> "$log_file" 2>&1
+    service nginx reload >> "$log_file" 2>&1
+
     # Create the marker file after successful execution
     touch "$MARKER_FILE"
-    echo "Initial setup completed."
+    log "Initial setup completed."
 else
-    echo "Initial setup script has already been run."
+    log "Initial setup script has already been run."
 fi
