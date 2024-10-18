@@ -93,7 +93,7 @@ class BSHelper {
             $cocktail = json_decode($cocktailApiResponse->getBody())->drinks[0];
             return $cocktail;
         } catch (RequestException $e) {
-            $log->error($this->get('clientIp'). "| $this->get('clientIp'). "| "Error getting recipe: " . $e->getMessage());
+            $log->error( $ip . "| | Error getting recipe: " . $e->getMessage());
             $emptyCocktail = new stdClass();
             $emptyCocktail->strCategory = 'error';
             $emptyCocktail->strInstructions = "Mix nothing with nothing";
@@ -146,6 +146,15 @@ class BSHelper {
         return self::fibonacci($n - 1) + self::fibonacci($n - 2); // Recursive call
     }
 
+    public static function getDbName($config) {
+        if ($config['usevault']) {
+            return self::getSecretFromKeyVault($config, 'cosmodb');
+        }  elseif ($config['envvault']) {
+            return $_ENV['APPSETTING_cosmodb'];   
+        } else {
+            return $_ENV['cosmodb'] ?? 'baby_slimex';       
+        }
+    }
     public static function getMongoDbUri($config) {
 
         if ($config['usevault']) {
@@ -159,6 +168,14 @@ class BSHelper {
 
             // Store the URI in APCu cache for future requests
             return $mongoUri;
+        } elseif ($config['envvault']) {
+            $username = $_ENV['APPSETTING_cosmouser'];
+            $password = $_ENV['APPSETTING_cosmopasswd'];
+            $hostname = $_ENV['APPSETTING_cosmohost'];
+
+            // Construct the MongoDB URI
+            $mongoUri = "mongodb+srv://{$username}:{$password}@{$hostname}.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000";
+
 
         } else {
             return $_ENV['MONGODB_URI'];
