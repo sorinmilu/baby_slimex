@@ -166,8 +166,7 @@ class BSHelper {
             // Construct the MongoDB URI
             $mongoUri = "mongodb+srv://{$username}:{$password}@{$hostname}.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000";
 
-            // Store the URI in APCu cache for future requests
-            return $mongoUri;
+
         } elseif ($config['envvault']) {
             $username = $_ENV['APPSETTING_cosmouser'];
             $password = $_ENV['APPSETTING_cosmopasswd'];
@@ -175,7 +174,7 @@ class BSHelper {
 
             // Construct the MongoDB URI
             $mongoUri = "mongodb+srv://{$username}:{$password}@{$hostname}.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000";
-
+            return $mongoUri;
 
         } else {
             return $_ENV['MONGODB_URI'];
