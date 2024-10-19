@@ -37,11 +37,7 @@ if [ ! -f "$MARKER_FILE" ]; then
     rm -f /home/site/wwwroot/config.php >> "$log_file" 2>&1
     mv /home/site/wwwroot/config_azure_webapp.php /home/site/wwwroot/config.php >> "$log_file" 2>&1
     
-    
     log "Initial setup completed."
-
-
-
 
 fi
 
@@ -49,4 +45,6 @@ log "Initial setup script has already been run."
 log "Executing permanent tasks"
 
 cp -f /home/site/wwwroot/nginx_config/default /etc/nginx/sites-available/default >> "$log_file" 2>&1
+cp -f /home/site/wwwroot/.env_copy /home/site/wwwroot/.env >> "$log_file" 2>&1
+
 service nginx reload >> "$log_file" 2>&1
